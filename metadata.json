@@ -1,9 +1,7 @@
 {
-  "name": "Food Decision Engine",
-  "description": "An LLM-powered decision tool inspired by decideforme.ca to help users choose what to eat based on constraints and preferences.",
+  "name": "今天吃什么 - 智能决策引擎",
+  "description": "基于 Gemini AI 的智能饮食决策工具，结合地理位置、预算、时间、心情及饮食计划。",
   "requestFramePermissions": [
-    "camera",
-    "microphone",
     "geolocation"
   ]
 }

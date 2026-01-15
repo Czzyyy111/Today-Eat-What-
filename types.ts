@@ -5,7 +5,6 @@ export type TimeConstraint = 'Quick' | 'Medium' | 'Leisurely';
 export interface UserLocation {
   latitude: number;
   longitude: number;
-  address?: string;
 }
 
 export interface UserPreferences {
@@ -18,14 +17,14 @@ export interface UserPreferences {
 }
 
 export interface FoodRecommendation {
-  dishName: string;
+  dishName: string;      // 推荐方案
+  reasoning: string;     // 推荐理由
+  behavioralAdvice: string; // 行为建议
+  optimizationTips: string; // 可选优化提示
   description: string;
-  reasoning: string;
   alternative: string;
   estimatedCost: string;
   estimatedTime: string;
-  behavioralAdvice: string;
-  optimizationTips: string;
 }
 
 export enum AppState {

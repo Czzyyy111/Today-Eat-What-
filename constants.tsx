@@ -1,17 +1,15 @@
 
-import React from 'react';
-
 export const BUDGET_OPTIONS = [
-  { label: '便宜', value: 'Low', desc: '经济实惠' },
-  { label: '适中', value: 'Medium', desc: '大众消费' },
-  { label: '奢华', value: 'High', desc: '犒劳一下' }
+  { label: '经济', value: 'Low' },
+  { label: '中等', value: 'Medium' },
+  { label: '高档', value: 'High' }
 ];
 
 export const TIME_OPTIONS = [
-  { label: '⚡ 快速', value: 'Quick', desc: '< 15 分钟' },
-  { label: '⏰ 适中', value: 'Medium', desc: '15-45 分钟' },
-  { label: '🍷 慢享', value: 'Leisurely', desc: '45 分钟以上' }
+  { label: '⚡ 快速', value: 'Quick' },
+  { label: '⏰ 适中', value: 'Medium' },
+  { label: '🍷 充裕', value: 'Leisurely' }
 ];
 
-export const MOODS = ['😴 疲惫', '🥳 活力', '🧐 纠结', '😌 随性', '😤 压力'];
-export const PREFERENCE_CHIPS = ['辣味', '素食', '治愈美食', '健康轻食', '甜点', '咸口', '脆口', '中餐', '日韩', '西餐'];
+export const MOODS = ['😴 疲惫', '🥳 兴奋', '🤔 纠结', '😌 平静', '😤 压力'];
+export const PREFERENCE_CHIPS = ['火锅', '烧烤', '快餐', '日料', '川菜', '粤菜', '西餐', '奶茶', '沙拉'];
