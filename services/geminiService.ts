@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserPreferences, FoodRecommendation } from "../types.ts";
 
-// 模拟数据：当没有 API Key 或网络请求失败时使用
+// 模拟数据
 const MOCK_RECOMMENDATIONS: FoodRecommendation[] = [
   {
     dishName: "地道北京杂酱面",
@@ -27,22 +27,22 @@ const MOCK_RECOMMENDATIONS: FoodRecommendation[] = [
 ];
 
 export const getFoodRecommendation = async (prefs: UserPreferences): Promise<FoodRecommendation> => {
-  const apiKey = process.env.API_KEY;
+  // 安全访问 API Key
+  const apiKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : "";
 
-  // 纯前端模拟模式：如果没有配置 API_KEY，直接返回模拟数据
-  if (!apiKey || apiKey === "YOUR_API_KEY") {
-    console.warn("未检测到有效 API Key，正在使用模拟决策逻辑。");
-    await new Promise(resolve => setTimeout(resolve, 1500)); // 模拟延迟
+  // 如果没有有效 API Key，进入模拟模式
+  if (!apiKey || apiKey === "YOUR_API_KEY" || apiKey.length < 5) {
+    console.warn("决策助手：检测到 API Key 未配置，已切换至内置模拟引擎。");
+    await new Promise(resolve => setTimeout(resolve, 2000));
     return MOCK_RECOMMENDATIONS[Math.floor(Math.random() * MOCK_RECOMMENDATIONS.length)];
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const prompt = `你是一个美食专家。请根据：
-    - 预算: ${prefs.budget}
-    - 时间: ${prefs.time}
-    - 心情: ${prefs.mood}
-    - 饮食计划: ${prefs.dietPlan || "无特别计划"}
-    生成一个详细的饮食决策。`;
+  const prompt = `你是一个美食专家。请根据以下因子做决策：
+    1. 可行性：预算 ${prefs.budget}, 时间 ${prefs.time}
+    2. 更优解：心情 ${prefs.mood}, 计划 ${prefs.dietPlan || "无"}
+    
+    请决定今天吃什么并返回 JSON。`;
 
   try {
     const response = await ai.models.generateContent({
@@ -67,12 +67,9 @@ export const getFoodRecommendation = async (prefs: UserPreferences): Promise<Foo
       },
     });
 
-    const text = response.text;
-    if (!text) throw new Error("Empty response");
-    return JSON.parse(text) as FoodRecommendation;
+    return JSON.parse(response.text) as FoodRecommendation;
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    // 降级策略
+    console.error("Gemini 决策失败，正在尝试降级到本地数据库:", error);
     return MOCK_RECOMMENDATIONS[0];
   }
 };

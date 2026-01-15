@@ -14,6 +14,7 @@
             color: #1a1a1a;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
         .gradient-bg {
             background: linear-gradient(135deg, #ff4d00 0%, #ff8a00 100%);
@@ -28,9 +29,22 @@
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out forwards;
         }
-        /* 避免加载闪烁 */
-        [v-cloak] { display: none; }
+        #error-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 9999;
+            padding: 2rem; color: #ef4444; font-family: monospace;
+        }
     </style>
+    <script>
+        // 关键：模拟 Node.js 环境，防止 Gemini SDK 报错
+        window.process = {
+            env: {
+                API_KEY: "" // 之后会自动从环境注入
+            }
+        };
+    </script>
 <script type="importmap">
 {
   "imports": {
@@ -44,20 +58,41 @@
 </head>
 <body>
     <div id="root"></div>
+    <div id="error-overlay">
+        <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">⚠️ 页面加载出错</h1>
+        <pre id="error-message"></pre>
+        <p style="margin-top: 1rem; color: #666;">请检查控制台 (F12) 获取详细信息。</p>
+    </div>
 
-    <!-- 关键：引入 esm.sh 的运行环境，它会自动转换项目中的 .tsx 文件 -->
+    <!-- 使用 esm.sh/run 自动处理所有 .tsx 模块 -->
     <script type="module">
         import { run } from 'https://esm.sh/run';
-        run();
+        
+        // 配置运行环境，指向我们的入口文件
+        try {
+            run({
+                main: './index.tsx',
+                // 强制指定依赖版本以确保稳定性
+                importMap: {
+                    "imports": {
+                        "react": "https://esm.sh/react@19.0.0",
+                        "react-dom": "https://esm.sh/react-dom@19.0.0",
+                        "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+                        "@google/genai": "https://esm.sh/@google/genai@1.36.0"
+                    }
+                }
+            });
+        } catch (e) {
+            document.getElementById('error-overlay').style.display = 'block';
+            document.getElementById('error-message').textContent = e.message;
+        }
     </script>
 
-    <!-- 将入口文件标记为 text/tsx -->
-    <script type="text/tsx" src="index.tsx"></script>
-
     <script>
-      // 捕获可能出现的转换错误并打印在控制台
       window.onerror = function(msg, url, line, col, error) {
-        console.error("运行时错误: ", msg, "\n位置: ", url, ":", line);
+        if (msg.includes('Script error')) return;
+        document.getElementById('error-overlay').style.display = 'block';
+        document.getElementById('error-message').textContent = msg + '\n' + url + ':' + line;
       };
     </script>
 </body>
