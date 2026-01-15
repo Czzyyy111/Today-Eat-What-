@@ -30,10 +30,10 @@
         }
     </style>
     <script>
-        // 必须在模块加载前注入全局 process 对象，防止 Gemini SDK 报错
+        // 必须在加载任何模块前注入，防止 Gemini SDK 访问 process.env 时报错
         window.process = {
             env: {
-                API_KEY: "" 
+                API_KEY: "" // 这里保持为空，代码逻辑会自动处理或回退到模拟数据
             }
         };
     </script>
@@ -51,30 +51,25 @@
 <body>
     <div id="root"></div>
 
-    <!-- 唯一合法的模块加载器 -->
     <script type="module">
-        import { run } from 'https://esm.sh/run';
+        // 修复点：esm.sh/run 现在使用默认导出 (default export)
+        import run from 'https://esm.sh/run';
         
-        // 自动检测并运行入口文件
-        run({
-            main: './index.tsx',
-            importMap: {
-                "imports": {
-                    "react": "https://esm.sh/react@18.3.1",
-                    "react-dom": "https://esm.sh/react-dom@18.3.1",
-                    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-                    "@google/genai": "https://esm.sh/@google/genai@1.36.0"
+        try {
+            run({
+                main: './index.tsx',
+                importMap: {
+                    "imports": {
+                        "react": "https://esm.sh/react@18.3.1",
+                        "react-dom": "https://esm.sh/react-dom@18.3.1",
+                        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+                        "@google/genai": "https://esm.sh/@google/genai@1.36.0"
+                    }
                 }
-            }
-        });
-
-        // 捕获可能导致的白屏错误并显示在控制台
-        window.addEventListener('error', (e) => {
-            console.error('Runtime Error:', e.message);
-            if (e.message.includes('import map')) {
-                alert('检测到 Import Map 冲突，请刷新页面。');
-            }
-        });
+            });
+        } catch (err) {
+            console.error("启动失败:", err);
+        }
     </script>
 </body>
 </html>
