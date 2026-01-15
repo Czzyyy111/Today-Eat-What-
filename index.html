@@ -14,7 +14,6 @@
             color: #1a1a1a;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
         }
         .gradient-bg {
             background: linear-gradient(135deg, #ff4d00 0%, #ff8a00 100%);
@@ -29,17 +28,9 @@
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out forwards;
         }
-        #error-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 9999;
-            padding: 2rem; color: #ef4444; font-family: monospace;
-            overflow: auto;
-        }
     </style>
     <script>
-        // 在最开始注入，防止任何第三方库因为找不到 process 而报错
+        // 必须在模块加载前注入全局 process 对象，防止 Gemini SDK 报错
         window.process = {
             env: {
                 API_KEY: "" 
@@ -59,53 +50,30 @@
 </head>
 <body>
     <div id="root"></div>
-    
-    <!-- 错误捕获层 -->
-    <div id="error-overlay">
-        <h1 style="font-size: 1.5rem; margin-bottom: 1rem; color: #b91c1c;">⚠️ 页面加载出错 (Runtime Error)</h1>
-        <pre id="error-message" style="background: #fef2f2; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fee2e2;"></pre>
-        <p style="margin-top: 1rem; color: #666; font-size: 0.875rem;">
-            可能原因：<br>
-            1. 网络无法访问 esm.sh 服务器<br>
-            2. 浏览器版本过低，不支持 ESM<br>
-            3. 模块路径引用错误
-        </p>
-    </div>
 
-    <!-- 核心运行逻辑：仅保留 esm.sh/run，不使用外部 importmap -->
+    <!-- 唯一合法的模块加载器 -->
     <script type="module">
         import { run } from 'https://esm.sh/run';
         
-        // 捕获启动阶段的错误
-        try {
-            run({
-                // 入口文件
-                main: './index.tsx',
-                // 将所有依赖映射到 esm.sh
-                importMap: {
-                    "imports": {
-                        "react": "https://esm.sh/react@18",
-                        "react-dom": "https://esm.sh/react-dom@18",
-                        "react-dom/client": "https://esm.sh/react-dom@18/client",
-                        "@google/genai": "https://esm.sh/@google/genai"
-                    }
+        // 自动检测并运行入口文件
+        run({
+            main: './index.tsx',
+            importMap: {
+                "imports": {
+                    "react": "https://esm.sh/react@18.3.1",
+                    "react-dom": "https://esm.sh/react-dom@18.3.1",
+                    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+                    "@google/genai": "https://esm.sh/@google/genai@1.36.0"
                 }
-            });
-        } catch (e) {
-            showError(e.message);
-        }
-
-        function showError(msg) {
-            document.getElementById('error-overlay').style.display = 'block';
-            document.getElementById('error-message').textContent = msg;
-        }
-
-        window.addEventListener('error', (event) => {
-            showError(event.message + '\nat ' + event.filename + ':' + event.lineno);
+            }
         });
-        
-        window.addEventListener('unhandledrejection', (event) => {
-            showError('异步错误: ' + event.reason);
+
+        // 捕获可能导致的白屏错误并显示在控制台
+        window.addEventListener('error', (e) => {
+            console.error('Runtime Error:', e.message);
+            if (e.message.includes('import map')) {
+                alert('检测到 Import Map 冲突，请刷新页面。');
+            }
         });
     </script>
 </body>

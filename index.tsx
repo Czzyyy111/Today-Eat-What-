@@ -6,7 +6,9 @@ import App from './App.tsx';
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
-  root.render(<App />);
-} else {
-  console.error("未能找到挂载点 #root");
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
 }
