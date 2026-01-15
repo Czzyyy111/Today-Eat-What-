@@ -10,7 +10,7 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
+            background-color: #fffaf5;
             color: #1a1a1a;
             margin: 0;
             padding: 0;
@@ -19,24 +19,16 @@
             background: linear-gradient(135deg, #ff4d00 0%, #ff8a00 100%);
         }
         .custom-shadow {
-            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 30px 60px -12px rgba(255, 77, 0, 0.12);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
+        .animate-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
-    <script>
-        // 必须在加载任何模块前注入，防止 Gemini SDK 访问 process.env 时报错
-        window.process = {
-            env: {
-                API_KEY: "" // 这里保持为空，代码逻辑会自动处理或回退到模拟数据
-            }
-        };
-    </script>
 <script type="importmap">
 {
   "imports": {
@@ -52,24 +44,20 @@
     <div id="root"></div>
 
     <script type="module">
-        // 修复点：esm.sh/run 现在使用默认导出 (default export)
-        import run from 'https://esm.sh/run';
+        // 关键：使用命名的 run 导出，并统一管理依赖
+        import { run } from 'https://esm.sh/run@0.0.10';
         
-        try {
-            run({
-                main: './index.tsx',
-                importMap: {
-                    "imports": {
-                        "react": "https://esm.sh/react@18.3.1",
-                        "react-dom": "https://esm.sh/react-dom@18.3.1",
-                        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-                        "@google/genai": "https://esm.sh/@google/genai@1.36.0"
-                    }
+        run({
+            main: './index.tsx',
+            importMap: {
+                "imports": {
+                    "react": "https://esm.sh/react@18.3.1",
+                    "react-dom": "https://esm.sh/react-dom@18.3.1",
+                    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+                    "@google/genai": "https://esm.sh/@google/genai@1.36.0"
                 }
-            });
-        } catch (err) {
-            console.error("启动失败:", err);
-        }
+            }
+        });
     </script>
 </body>
 </html>

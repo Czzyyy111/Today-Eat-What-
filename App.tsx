@@ -6,66 +6,69 @@ import InputSection from './components/InputSection.tsx';
 import ResultCard from './components/ResultCard.tsx';
 
 const App: React.FC = () => {
-  const [appState, setAppState] = useState<AppState>(AppState.IDLE);
+  const [state, setState] = useState<AppState>(AppState.IDLE);
   const [prefs, setPrefs] = useState<UserPreferences>({
     budget: 'Medium',
     time: 'Medium',
-    preferences: [],
     mood: '😌 平静',
-    dietPlan: ''
+    dietPlan: '',
+    preferences: []
   });
   const [result, setResult] = useState<FoodRecommendation | null>(null);
 
-  const handleUpdatePrefs = (updates: Partial<UserPreferences>) => {
+  const handleUpdate = (updates: Partial<UserPreferences>) => {
     setPrefs(prev => ({ ...prev, ...updates }));
   };
 
   const handleDecide = async () => {
-    setAppState(AppState.LOADING);
+    setState(AppState.LOADING);
     try {
-      // 调用决策服务（目前是模拟数据/Gemini API）
       const decision = await getFoodRecommendation(prefs);
       setResult(decision);
-      setAppState(AppState.RESULT);
-    } catch (error) {
-      console.error("Decision failed:", error);
-      alert("决策引擎遇到一点小问题，请稍后再试。");
-      setAppState(AppState.IDLE);
+      setState(AppState.RESULT);
+    } catch (e) {
+      alert("决策失败，请检查网络后重试。");
+      setState(AppState.IDLE);
     }
   };
 
-  const handleReset = () => {
-    setAppState(AppState.IDLE);
-    setResult(null);
-  };
-
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center py-12">
-      {appState === AppState.IDLE && (
+    <div className="min-h-screen px-4 flex flex-col items-center justify-center">
+      {state === AppState.IDLE && (
         <InputSection 
           preferences={prefs} 
-          onChange={handleUpdatePrefs} 
+          onChange={handleUpdate} 
           onSubmit={handleDecide} 
         />
       )}
 
-      {appState === AppState.LOADING && (
-        <div className="flex flex-col items-center space-y-8 animate-pulse">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-[#ff4d00] to-[#ff8a00] flex items-center justify-center">
-            <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center">
-              <span className="text-4xl animate-bounce">🍱</span>
-            </div>
+      {state === AppState.LOADING && (
+        <div className="text-center space-y-6">
+          <div className="relative w-24 h-24 mx-auto">
+            <div className="absolute inset-0 border-8 border-orange-100 rounded-full"></div>
+            <div className="absolute inset-0 border-8 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center text-4xl">🍳</div>
           </div>
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-black text-gray-900">LLM 正在品鉴...</h2>
-            <p className="text-gray-500 font-medium">正在基于可行性因子寻找最优解</p>
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black text-gray-900">LLM 正在品味...</h2>
+            <p className="text-gray-400 font-medium">综合考量地理位置与当下心情</p>
           </div>
         </div>
       )}
 
-      {appState === AppState.RESULT && result && (
-        <ResultCard result={result} onReset={handleReset} />
+      {state === AppState.RESULT && result && (
+        <ResultCard 
+          result={result} 
+          onReset={() => {
+            setState(AppState.IDLE);
+            setResult(null);
+          }} 
+        />
       )}
+
+      <footer className="mt-12 text-gray-300 text-[10px] font-bold uppercase tracking-widest">
+        Powered by Gemini 3.0 • Smart Food Decision
+      </footer>
     </div>
   );
 };

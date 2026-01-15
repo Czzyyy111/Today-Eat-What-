@@ -2,53 +2,43 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserPreferences, FoodRecommendation } from "../types.ts";
 
-// 模拟数据
-const MOCK_RECOMMENDATIONS: FoodRecommendation[] = [
+const MOCK_DATA: FoodRecommendation[] = [
   {
-    dishName: "地道北京杂酱面",
-    description: "劲道的面条拌上浓郁的大酱，配上爽口的菜码。",
-    reasoning: "根据你的预算和心情，这份经典的面食既能快速饱腹，又能提供踏实的幸福感。",
-    behavioralAdvice: "一定要多加点陈醋和大蒜，这才是吃面的灵魂。",
-    optimizationTips: "如果觉得腻，可以配上一瓶北冰洋汽水。",
-    alternative: "山西刀削面",
-    estimatedCost: "¥25-35",
-    estimatedTime: "15分钟"
-  },
-  {
-    dishName: "慢炖番茄牛腩饭",
-    description: "牛腩软糯入味，汤汁酸甜浓郁，淋在白米饭上简直绝配。",
-    reasoning: "你需要一点热气腾腾的能量。番茄的酸味能激发你的食欲，舒缓压力。",
-    behavioralAdvice: "先喝一小口浓汤，让味蕾苏醒。",
-    optimizationTips: "拌饭时可以加一点点辣椒油，提鲜效果极佳。",
-    alternative: "咖喱鸡排饭",
-    estimatedCost: "¥45-60",
-    estimatedTime: "25分钟"
+    dishName: "热腾腾的番茄肥牛面",
+    description: "酸甜浓郁的汤底配上滑嫩的肥牛。",
+    reasoning: "既然你感到疲惫且时间较紧，一碗暖胃的面条能最快修复你的多巴胺。",
+    behavioralAdvice: "第一口先喝汤，让胃部迅速暖起来。",
+    optimizationTips: "可以加一个煎蛋，丰富蛋白质摄入。",
+    alternative: "日式拉面",
+    estimatedCost: "¥30-40",
+    estimatedTime: "10分钟"
   }
 ];
 
 export const getFoodRecommendation = async (prefs: UserPreferences): Promise<FoodRecommendation> => {
-  // 安全访问 API Key
-  const apiKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : "";
+  // Always use a new instance with the direct process.env.API_KEY reference
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const systemPrompt = `你是一个资深美食评论家和营养师。
+  你的任务是根据用户的“可行性因子”（预算、时间）和“更优解因子”（心情、计划、偏好）给出一个最终决策。
+  决策必须具体且有说服力。`;
 
-  // 如果没有有效 API Key，进入模拟模式
-  if (!apiKey || apiKey === "YOUR_API_KEY" || apiKey.length < 5) {
-    console.warn("决策助手：检测到 API Key 未配置，已切换至内置模拟引擎。");
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    return MOCK_RECOMMENDATIONS[Math.floor(Math.random() * MOCK_RECOMMENDATIONS.length)];
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-  const prompt = `你是一个美食专家。请根据以下因子做决策：
-    1. 可行性：预算 ${prefs.budget}, 时间 ${prefs.time}
-    2. 更优解：心情 ${prefs.mood}, 计划 ${prefs.dietPlan || "无"}
-    
-    请决定今天吃什么并返回 JSON。`;
+  const userPrompt = `
+  用户情况：
+  - 预算: ${prefs.budget}
+  - 时间: ${prefs.time}
+  - 当前心情: ${prefs.mood}
+  - 饮食计划: ${prefs.dietPlan || "无特定计划"}
+  - 位置: ${prefs.location ? `经纬度(${prefs.location.latitude}, ${prefs.location.longitude})` : "未知"}
+  
+  请给出一个完美的餐饮决策。`;
 
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: userPrompt,
       config: {
+        systemInstruction: systemPrompt,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -67,9 +57,16 @@ export const getFoodRecommendation = async (prefs: UserPreferences): Promise<Foo
       },
     });
 
-    return JSON.parse(response.text) as FoodRecommendation;
+    // Extracting text output directly from property as per guidelines
+    const text = response.text;
+    if (!text) {
+      throw new Error("Empty response from Gemini API");
+    }
+
+    return JSON.parse(text.trim()) as FoodRecommendation;
   } catch (error) {
-    console.error("Gemini 决策失败，正在尝试降级到本地数据库:", error);
-    return MOCK_RECOMMENDATIONS[0];
+    console.error("Gemini 决策异常:", error);
+    // Return mock data for graceful fallback if API fails
+    return MOCK_DATA[0];
   }
 };

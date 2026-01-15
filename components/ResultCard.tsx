@@ -9,62 +9,42 @@ interface Props {
 
 const ResultCard: React.FC<Props> = ({ result, onReset }) => {
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
-      <div className="bg-white rounded-[3rem] overflow-hidden custom-shadow border border-gray-100">
-        {/* Header */}
-        <div className="gradient-bg px-10 py-8 text-white">
-          <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">决策结果</span>
+    <div className="w-full max-w-xl mx-auto animate-slide-up">
+      <div className="bg-white rounded-[3rem] overflow-hidden custom-shadow border border-orange-50">
+        <div className="gradient-bg p-8 text-white text-center">
+          <span className="text-xs font-black uppercase tracking-[0.3em] opacity-70">Decision Result</span>
           <h2 className="text-4xl font-black mt-2">{result.dishName}</h2>
-          <div className="flex gap-4 mt-4">
-            <span className="bg-white/20 px-3 py-1 rounded-lg text-xs font-bold">💰 {result.estimatedCost}</span>
-            <span className="bg-white/20 px-3 py-1 rounded-lg text-xs font-bold">⏱️ {result.estimatedTime}</span>
+          <div className="flex justify-center gap-3 mt-4">
+            <span className="bg-black/10 backdrop-blur-md px-4 py-1 rounded-full text-xs font-bold">{result.estimatedCost}</span>
+            <span className="bg-black/10 backdrop-blur-md px-4 py-1 rounded-full text-xs font-bold">{result.estimatedTime}</span>
           </div>
         </div>
 
-        <div className="p-10 space-y-10">
-          {/* 决定模块 */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-gray-100"></div>
-              <span className="text-lg font-black text-orange-600">决定 Decision</span>
-              <div className="h-px flex-1 bg-gray-100"></div>
+        <div className="p-8 space-y-8">
+          <div className="space-y-2">
+            <h4 className="text-xs font-black text-orange-500 uppercase tracking-widest italic">Why this? / 推荐理由</h4>
+            <p className="text-gray-700 leading-relaxed font-medium">{result.reasoning}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-orange-50/50 p-6 rounded-[2rem] space-y-2">
+              <h4 className="text-[10px] font-black text-orange-400 uppercase">Advice / 行为建议</h4>
+              <p className="text-sm text-gray-600 leading-snug">{result.behavioralAdvice}</p>
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <h5 className="text-xs font-black text-gray-400 uppercase">推荐方案</h5>
-                <p className="text-xl font-bold text-gray-900">{result.dishName}</p>
-              </div>
-              <div className="space-y-2">
-                <h5 className="text-xs font-black text-gray-400 uppercase">推荐理由</h5>
-                <p className="text-gray-600 leading-relaxed text-sm">{result.reasoning}</p>
-              </div>
+            <div className="bg-gray-50 p-6 rounded-[2rem] space-y-2">
+              <h4 className="text-[10px] font-black text-gray-400 uppercase">Tips / 优化提示</h4>
+              <p className="text-sm text-gray-600 leading-snug">{result.optimizationTips}</p>
             </div>
           </div>
 
-          {/* 建议模块 */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-gray-100"></div>
-              <span className="text-lg font-black text-indigo-600">建议 Suggestion</span>
-              <div className="h-px flex-1 bg-gray-100"></div>
+          <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-gray-400 uppercase">Alternative / 备选</p>
+              <p className="text-sm font-black text-gray-800">{result.alternative}</p>
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <h5 className="text-xs font-black text-gray-400 uppercase">行为建议</h5>
-                <p className="text-gray-700 bg-indigo-50 p-4 rounded-2xl text-sm italic">{result.behavioralAdvice}</p>
-              </div>
-              <div className="space-y-2">
-                <h5 className="text-xs font-black text-gray-400 uppercase">可选优化提示</h5>
-                <p className="text-gray-700 bg-emerald-50 p-4 rounded-2xl text-sm">{result.optimizationTips}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-400">不喜欢？试下备选：<span className="font-bold text-gray-900">{result.alternative}</span></p>
             <button 
               onClick={onReset}
-              className="px-8 py-3 bg-gray-900 text-white font-bold rounded-2xl hover:bg-orange-600 transition-colors"
+              className="px-6 py-3 bg-gray-900 text-white font-bold rounded-2xl hover:bg-orange-600 transition-colors text-sm"
             >
               重新决策
             </button>

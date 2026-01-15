@@ -3,33 +3,17 @@ export type BudgetLevel = 'Low' | 'Medium' | 'High';
 export type TimeConstraint = 'Quick' | 'Medium' | 'Leisurely';
 
 export interface UserPreferences {
-  // 可行性因子
+  // 可行性因子 (Feasibility)
   budget: BudgetLevel;
   time: TimeConstraint;
-  // 定位信息 (Added to fix errors in InputSection.tsx)
   location?: { latitude: number; longitude: number };
-  // 更优解因子
-  preferences: string[];
+  
+  // 更优解因子 (Optimization)
   mood: string;
   dietPlan: string;
+  preferences: string[];
 }
 
-export interface FoodItem {
-  id: string;
-  name: string;
-  description: string;
-  reasoning: string;
-  behavioralAdvice: string;
-  optimizationTips: string;
-  alternative: string;
-  // 匹配因子
-  budget: BudgetLevel;
-  time: TimeConstraint;
-  moods: string[];
-  categories: string[];
-}
-
-// Added to fix "Module has no exported member 'FoodRecommendation'" in geminiService.ts and ResultCard.tsx
 export interface FoodRecommendation {
   dishName: string;
   description: string;
@@ -39,6 +23,21 @@ export interface FoodRecommendation {
   alternative: string;
   estimatedCost: string;
   estimatedTime: string;
+}
+
+// Added FoodItem interface to resolve import error in services/foodService.ts
+export interface FoodItem {
+  id: string;
+  name: string;
+  description: string;
+  reasoning: string;
+  behavioralAdvice: string;
+  optimizationTips: string;
+  alternative: string;
+  budget: BudgetLevel;
+  time: TimeConstraint;
+  moods: string[];
+  categories: string[];
 }
 
 export enum AppState {
