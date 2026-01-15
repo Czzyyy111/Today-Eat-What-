@@ -1,0 +1,9 @@
+{
+  "name": "Food Decision Engine",
+  "description": "An LLM-powered decision tool inspired by decideforme.ca to help users choose what to eat based on constraints and preferences.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
