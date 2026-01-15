@@ -35,13 +35,14 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: white; z-index: 9999;
             padding: 2rem; color: #ef4444; font-family: monospace;
+            overflow: auto;
         }
     </style>
     <script>
-        // 关键：模拟 Node.js 环境，防止 Gemini SDK 报错
+        // 在最开始注入，防止任何第三方库因为找不到 process 而报错
         window.process = {
             env: {
-                API_KEY: "" // 之后会自动从环境注入
+                API_KEY: "" 
             }
         };
     </script>
@@ -58,42 +59,54 @@
 </head>
 <body>
     <div id="root"></div>
+    
+    <!-- 错误捕获层 -->
     <div id="error-overlay">
-        <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">⚠️ 页面加载出错</h1>
-        <pre id="error-message"></pre>
-        <p style="margin-top: 1rem; color: #666;">请检查控制台 (F12) 获取详细信息。</p>
+        <h1 style="font-size: 1.5rem; margin-bottom: 1rem; color: #b91c1c;">⚠️ 页面加载出错 (Runtime Error)</h1>
+        <pre id="error-message" style="background: #fef2f2; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fee2e2;"></pre>
+        <p style="margin-top: 1rem; color: #666; font-size: 0.875rem;">
+            可能原因：<br>
+            1. 网络无法访问 esm.sh 服务器<br>
+            2. 浏览器版本过低，不支持 ESM<br>
+            3. 模块路径引用错误
+        </p>
     </div>
 
-    <!-- 使用 esm.sh/run 自动处理所有 .tsx 模块 -->
+    <!-- 核心运行逻辑：仅保留 esm.sh/run，不使用外部 importmap -->
     <script type="module">
         import { run } from 'https://esm.sh/run';
         
-        // 配置运行环境，指向我们的入口文件
+        // 捕获启动阶段的错误
         try {
             run({
+                // 入口文件
                 main: './index.tsx',
-                // 强制指定依赖版本以确保稳定性
+                // 将所有依赖映射到 esm.sh
                 importMap: {
                     "imports": {
-                        "react": "https://esm.sh/react@19.0.0",
-                        "react-dom": "https://esm.sh/react-dom@19.0.0",
-                        "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-                        "@google/genai": "https://esm.sh/@google/genai@1.36.0"
+                        "react": "https://esm.sh/react@18",
+                        "react-dom": "https://esm.sh/react-dom@18",
+                        "react-dom/client": "https://esm.sh/react-dom@18/client",
+                        "@google/genai": "https://esm.sh/@google/genai"
                     }
                 }
             });
         } catch (e) {
-            document.getElementById('error-overlay').style.display = 'block';
-            document.getElementById('error-message').textContent = e.message;
+            showError(e.message);
         }
-    </script>
 
-    <script>
-      window.onerror = function(msg, url, line, col, error) {
-        if (msg.includes('Script error')) return;
-        document.getElementById('error-overlay').style.display = 'block';
-        document.getElementById('error-message').textContent = msg + '\n' + url + ':' + line;
-      };
+        function showError(msg) {
+            document.getElementById('error-overlay').style.display = 'block';
+            document.getElementById('error-message').textContent = msg;
+        }
+
+        window.addEventListener('error', (event) => {
+            showError(event.message + '\nat ' + event.filename + ':' + event.lineno);
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            showError('异步错误: ' + event.reason);
+        });
     </script>
 </body>
 </html>
